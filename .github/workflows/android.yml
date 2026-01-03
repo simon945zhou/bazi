@@ -10,14 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Code
+        uses: actions/checkout@v4  # 已升级到 v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5 # 已升级到 v5
         with:
-          python-version: '3.8'
+          python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y scons libncurses5-dev libncursesw5-dev libssl-dev linux-libc-dev zlib1g-dev libsqlite3-dev libbz2-dev libreadline-dev libgdbm-dev tk-dev libdb5.3-dev libexpat1-dev liblzma-dev libffi-dev uuid-dev
@@ -26,13 +27,15 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # 必须将移动端文件命名为 main.py 才能被打包识别
-          cp mobile_main.py main.py
-          # 运行打包命令
+          # 准备主入口文件
+          if [ -f "mobile_main.py" ]; then
+            cp mobile_main.py main.py
+          fi
+          # 开始打包
           yes | buildozer android debug
         
       - name: Upload APK
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4 # 关键修复：已升级到 v4
         with:
           name: BaziApp-APK
           path: bin/*.apk
