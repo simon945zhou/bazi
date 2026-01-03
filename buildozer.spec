@@ -20,7 +20,7 @@ version = 1.0.0
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,lunar_python
+requirements = python3,kivy,lunar-python
 
 # (str) Supported orientations
 # Valid values are: landscape, portrait, portrait-upside-down, landscape-left, landscape-right
@@ -51,3 +51,4 @@ log_level = 2
 
 # (int) Display warning if buildozer is run as root (0 = off, 1 = on)
 warn_on_root = 1
+
