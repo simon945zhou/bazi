@@ -7,35 +7,63 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # 使用最新镜像
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4  # 已升级到 v4
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5 # 已升级到 v5
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y scons libncurses5-dev libncursesw5-dev libssl-dev linux-libc-dev zlib1g-dev libsqlite3-dev libbz2-dev libreadline-dev libgdbm-dev tk-dev libdb5.3-dev libexpat1-dev liblzma-dev libffi-dev uuid-dev
+          # 安装安卓打包必须的底层环境
+          sudo apt-get install -y \
+            build-essential \
+            git \
+            python3-dev \
+            libsdl2-dev \
+            libsdl2-image-dev \
+            libsdl2-mixer-dev \
+            libsdl2-ttf-dev \
+            libportmidi-dev \
+            libswscale-dev \
+            libavformat-dev \
+            libavcodec-dev \
+            zlib1g-dev \
+            libgstreamer1.0-dev \
+            gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good \
+            libffi-dev \
+            libssl-dev \
+            ffmpeg
           pip install --upgrade pip
-          pip install buildozer cython kivy lunar-python
+          pip install buildozer cython
 
-      - name: Build with Buildozer
+      - name: Prepare buildozer.spec
         run: |
-          # 准备主入口文件
+          # 确保根目录下有配置文件，如果没有则初始化一个基本的
+          if [ ! -f "buildozer.spec" ]; then
+            buildozer init
+          fi
+          # 关键点：修正 mobile_main.py 为 main.py，这是打包硬性要求
           if [ -f "mobile_main.py" ]; then
             cp mobile_main.py main.py
           fi
-          # 开始打包
-          yes | buildozer android debug
+
+      - name: Build with Buildozer
+        id: buildozer
+        run: |
+          # 使用 --verbose 查看详细日志
+          # 使用 yes 'y' 持续输入确保不会中断
+          yes 'y' | buildozer android debug --verbose
         
       - name: Upload APK
-        uses: actions/upload-artifact@v4 # 关键修复：已升级到 v4
+        uses: actions/upload-artifact@v4
         with:
           name: BaziApp-APK
           path: bin/*.apk
